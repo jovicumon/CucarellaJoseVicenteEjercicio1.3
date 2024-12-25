@@ -39,13 +39,9 @@ public class Player implements Serializable {
         List<Player> ranking = new ArrayList<>();
         try (ObjectInputStream in = new ObjectInputStream(new FileInputStream("data/ranking.dat"))) {
             Object obj = in.readObject();  // Leemos el objeto desde el archivo
-            if (obj instanceof List<?>) {
-                // Verificamos que el objeto sea de tipo List
-                List<?> tempList = (List<?>) obj;
-                // Verificamos que todos los elementos sean de tipo Player
-                if (!tempList.isEmpty() && tempList.getFirst() instanceof Player) {
-                    ranking = (List<Player>) tempList;  // Cast seguro
-                }
+            if (obj instanceof List<?> list && !list.isEmpty() && list.getFirst() instanceof Player) {
+                // Si el objeto es una lista y contiene jugadores
+                ranking = (List<Player>) list;  // Cast seguro
             }
         } catch (FileNotFoundException e) {
             // Si el archivo no existe, creamos un ranking vacío
@@ -54,6 +50,7 @@ public class Player implements Serializable {
         }
         return ranking;
     }
+
 
 }
 
