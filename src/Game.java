@@ -35,23 +35,34 @@ public class Game {
 
         remainingAttempts = 10; // Asignamos el valor de intentos
 
-        // Ciclo principal del juego
         while (remainingAttempts > 0) {
-            System.out.println("\nTurnos restantes: " + remainingAttempts);
-            System.out.println("Puntos: " + player.getScore());
+            System.out.println("\nTurnos restantes: " + remainingAttempts);  // Mostrar los turnos restantes
+            System.out.println("Puntos: " + player.getScore());  // Mostrar los puntos obtenidos
             System.out.println("Elige una opción:");
             System.out.println("[1] Adivina una letra");
             System.out.println("[2] Adivina el título de la película");
             System.out.println("[3] Salir");
 
-            System.out.print("Selecciona una opción: ");
-            int choice = scanner.nextInt();
-            scanner.nextLine(); // Limpiar buffer
+            // Validar entrada para el menú
+            int choice = 0;
+            boolean validInput = false;
+            while (!validInput) {
+                System.out.print("Selecciona una opción: ");
+                try {
+                    choice = scanner.nextInt(); // Intentamos leer un entero
+                    validInput = true;  // Si se lee un número correctamente, salimos del bucle
+                } catch (InputMismatchException e) {
+                    System.out.println("Entrada no válida. Por favor, ingresa un número del 1 al 3.");
+                    scanner.nextLine(); // Limpiar el buffer para intentar nuevamente
+                }
+            }
+
+            scanner.nextLine(); // Limpiar el buffer
 
             switch (choice) {
-                case 1 -> guessLetter(scanner);
-                case 2 -> guessTitle(scanner);
-                case 3 -> {
+                case 1 -> guessLetter(scanner); // Adivinar letra
+                case 2 -> guessTitle(scanner); // Adivinar título
+                case 3 -> { // Salir
                     System.out.println("Has salido del juego.");
                     return;
                 }
@@ -183,10 +194,15 @@ public class Game {
     // Cargar el ranking desde el archivo binario
     public static List<Player> loadRankingFromFile() {
         List<Player> ranking = new ArrayList<>();
-        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream("data/ranking.dat"))) {
-            Object obj = in.readObject();
-            if (obj instanceof List<?> list && !list.isEmpty() && list.get(0) instanceof Player) {
-                ranking = (List<Player>) list;
+        try {
+            FileInputStream fi = new FileInputStream("data/ranking.dat");
+            //Comprobación ranking.dat está vacío
+            if (fi.available() > 0) {
+                ObjectInputStream in = new ObjectInputStream(new FileInputStream("data/ranking.dat"));
+                Object obj = in.readObject();
+                if (obj instanceof List<?> list && !list.isEmpty() && list.getFirst() instanceof Player) {
+                    ranking = (List<Player>) list;
+                }
             }
         } catch (FileNotFoundException e) {
             // Si el archivo no existe, creamos un ranking vacío
