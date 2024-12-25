@@ -1,9 +1,6 @@
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
-/**
- * Clase principal que gestiona el juego.
- */
 public class Game {
     private List<Movie> movies;
     private Player player;
@@ -23,55 +20,38 @@ public class Game {
         Random random = new Random();
         selectedMovie = movies.get(random.nextInt(movies.size()));
 
-        // Introducir el nickname del jugador
-        System.out.println("🎯 🎯 🎯 Adivina la película 🎯 🎯 🎯");
+        System.out.println("Bienvenido al juego de adivinar la película!");
         System.out.print("Introduce tu nickname: ");
         String nickname = scanner.nextLine();
-        player = new Player(nickname);
+        player = new Player(nickname, 0);
 
-        System.out.println("El título de la película tiene " + selectedMovie.getTitle().length() + " caracteres (incluidos espacios y signos de puntuación)");
-        System.out.println("La película a adivinar es: " + selectedMovie.getHiddenTitle());
+        System.out.println("Título de la película: " + selectedMovie.getHiddenTitle());
 
-        remainingAttempts = 10; // Número de intentos
+        remainingAttempts = 10; // Asignamos el valor directamente
 
         // Ciclo principal del juego
         while (remainingAttempts > 0) {
-            System.out.println("\nTurnos restantes: " + remainingAttempts);  // Mostrar los turnos restantes
-            System.out.println("Puntos: " + player.getScore());  // Mostrar los puntos obtenidos
-            System.out.println("Elige una opción:");
-            System.out.println("[1] Adivina una letra");
-            System.out.println("[2] Adivina el título de la película");
-            System.out.println("[3] Salir");
-
-            // Validar entrada para el menú
-            int choice = 0;
-            boolean validInput = false;
-            while (!validInput) {
-                System.out.print("Selecciona una opción: ");
-                try {
-                    choice = scanner.nextInt(); // Intentamos leer un entero
-                    validInput = true;  // Si se lee un número correctamente, salimos del bucle
-                } catch (InputMismatchException e) {
-                    System.out.println("Entrada no válida. Por favor, ingresa un número del 1 al 3.");
-                    scanner.nextLine(); // Limpiar el buffer para intentar nuevamente
-                }
-            }
-
-            scanner.nextLine(); // Limpiar el buffer
+            System.out.println("\nOpciones:");
+            System.out.println("[1] Adivinar una letra");
+            System.out.println("[2] Adivinar el título completo");
+            System.out.println("[3] Salir del juego");
+            System.out.print("Selecciona una opción: ");
+            int choice = scanner.nextInt();
+            scanner.nextLine(); // Limpiar buffer
 
             switch (choice) {
-                case 1 -> guessLetter(scanner); // Adivinar letra
-                case 2 -> guessTitle(scanner); // Adivinar título
-                case 3 -> { // Salir
+                case 1 -> guessLetter(scanner);
+                case 2 -> guessTitle(scanner);
+                case 3 -> {
                     System.out.println("Has salido del juego.");
                     return;
                 }
                 default -> System.out.println("Opción no válida. Intenta nuevamente.");
             }
 
-            if (isGameWon()) { // Verifica si el juego ha sido ganado
+            if (isGameWon()) {
                 System.out.println("¡Felicidades! Has adivinado la película: " + selectedMovie.getTitle());
-                player.addScore(20);  // Puntuar por ganar
+                player.addScore(20);
                 break;
             }
         }
@@ -81,6 +61,9 @@ public class Game {
         }
 
         System.out.println("Puntuación final: " + player.getScore());
+
+        // Al finalizar el juego, intentamos guardar el ranking si la puntuación es relevante
+        saveRanking();
     }
 
     private void guessLetter(Scanner scanner) {
@@ -150,8 +133,55 @@ public class Game {
         return true;
     }
 
+    private void saveRanking() {
+        List<Player> ranking = Player.loadRankingFromFile();
+
+        if (ranking.size() < 5 || player.getScore() > ranking.get(4).getScore()) {
+            // Si el jugador entra en el ranking de las 5 mejores puntuaciones
+            boolean nicknameExists = true; // Empezamos asumiendo que el nickname no existe.
+            while (nicknameExists) {
+                System.out.print("Introduce tu nickname para el ranking: ");
+                String nickname = new Scanner(System.in).nextLine();
+
+                // Verificar si el nickname ya existe
+                boolean exists = false;
+                for (Player p : ranking) {
+                    if (p.getNickname().equalsIgnoreCase(nickname)) {
+                        System.out.println("El nickname ya existe. Intenta con otro.");
+                        exists = true;
+                        break; // Si el nickname ya existe, salimos del bucle
+                    }
+                }
+
+                if (!exists) {
+                    // Si el nickname no existe, lo asignamos al jugador y salimos del bucle
+                    ranking.add(new Player(nickname, player.getScore()));
+                    // Ordenar el ranking en orden descendente de puntuaciones
+                    ranking.sort((p1, p2) -> Integer.compare(p2.getScore(), p1.getScore()));
+                    // Limitar el ranking a las 5 mejores puntuaciones
+                    if (ranking.size() > 5) {
+                        ranking.remove(5);
+                    }
+                    // Guardar el ranking actualizado en el archivo
+                    Player.saveRankingToFile(ranking);
+                    nicknameExists = false; // Salir del bucle
+                }
+            }
+        } else {
+            System.out.println("Tu puntuación no entra en el ranking de las mejores 5.");
+        }
+
+
+        // Mostrar el ranking
+        System.out.println("\nRanking de puntuaciones:");
+        for (Player p : ranking) {
+            System.out.println(p.getNickname() + " - " + p.getScore());
+        }
+    }
+
     public static void main(String[] args) {
-        String filePath = "movies.txt";  // Ruta del archivo de películas
+        String filePath = "data/movies.txt"; // Ruta actualizada para el archivo de películas
+
         try {
             List<Movie> movies = Movie.loadMoviesFromFile(filePath);
             Game game = new Game(movies);
