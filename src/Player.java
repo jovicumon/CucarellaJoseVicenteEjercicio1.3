@@ -7,9 +7,12 @@ public class Player implements Serializable {
     private String nickname;
     private int score;
 
-    public Player(String nickname) {
-        this.nickname = nickname;
+    public Player() {
         this.score = 0;
+    }
+
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
     }
 
     public String getNickname() {

@@ -11,6 +11,8 @@ public class Game {
     private Set<Character> guessedLetters;
     private int remainingAttempts;
     private List<Player> ranking;
+    static final String rutaMovies = "data/movies.txt";
+    static final String rutaRanking = "data/ranking.dat";
 
     public Game(List<Movie> movies) {
         this.movies = movies;
@@ -29,9 +31,7 @@ public class Game {
         System.out.println("El título de la película tiene " + selectedMovie.getTitle().length() + " caracteres (incluidos espacios y signos de puntuación)");
         System.out.println("La película a adivinar es: " + selectedMovie.getHiddenTitle());
 
-        System.out.print("Introduce tu nickname: ");
-        String nickname = scanner.nextLine();
-        player = new Player(nickname);
+        player = new Player();
 
         remainingAttempts = 10; // Asignamos el valor de intentos
 
@@ -93,14 +93,14 @@ public class Game {
                 for (Player p : ranking) {
                     if (p.getNickname().equalsIgnoreCase(nicknameInput)) {
                         System.out.println("El nickname ya existe. Intenta con otro.");
-                        nicknameExists = false;
                         break;
                     }
                 }
 
                 if (!nicknameExists) {
                     nicknameExists = true;
-                    Player newPlayer = new Player(nicknameInput);
+                    Player newPlayer = new Player();
+                    newPlayer.setNickname(nicknameInput);
                     newPlayer.addScore(player.getScore());
                     ranking.add(newPlayer);
                     Collections.sort(ranking, (p1, p2) -> p2.getScore() - p1.getScore()); // Ordenar el ranking
@@ -195,10 +195,10 @@ public class Game {
     public static List<Player> loadRankingFromFile() {
         List<Player> ranking = new ArrayList<>();
         try {
-            FileInputStream fi = new FileInputStream("data/ranking.dat");
+            FileInputStream fi = new FileInputStream(rutaRanking);
             //Comprobación ranking.dat está vacío
             if (fi.available() > 0) {
-                ObjectInputStream in = new ObjectInputStream(new FileInputStream("data/ranking.dat"));
+                ObjectInputStream in = new ObjectInputStream(new FileInputStream(rutaRanking));
                 Object obj = in.readObject();
                 if (obj instanceof List<?> list && !list.isEmpty() && list.getFirst() instanceof Player) {
                     ranking = (List<Player>) list;
@@ -214,7 +214,7 @@ public class Game {
 
     // Guardar el ranking actualizado en el archivo binario
     public static void saveRankingToFile(List<Player> ranking) {
-        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream("data/ranking.dat"))) {
+        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(rutaRanking))) {
             out.writeObject(ranking);
         } catch (IOException e) {
             System.err.println("Error al guardar el ranking: " + e.getMessage());
@@ -222,9 +222,8 @@ public class Game {
     }
 
     public static void main(String[] args) {
-        String filePath = "data/movies.txt";
         try {
-            List<Movie> movies = Movie.loadMoviesFromFile(filePath);
+            List<Movie> movies = Movie.loadMoviesFromFile(rutaMovies);
             Game game = new Game(movies);
             game.start();
         } catch (IOException e) {
