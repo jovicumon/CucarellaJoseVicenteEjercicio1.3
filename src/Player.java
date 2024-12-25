@@ -43,7 +43,7 @@ public class Player implements Serializable {
                 // Verificamos que el objeto sea de tipo List
                 List<?> tempList = (List<?>) obj;
                 // Verificamos que todos los elementos sean de tipo Player
-                if (!tempList.isEmpty() && tempList.get(0) instanceof Player) {
+                if (!tempList.isEmpty() && tempList.getFirst() instanceof Player) {
                     ranking = (List<Player>) tempList;  // Cast seguro
                 }
             }
