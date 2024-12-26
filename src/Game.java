@@ -14,8 +14,13 @@ public class Game {
     static final String rutaMovies = "data/movies.txt";
     static final String rutaRanking = "data/ranking.dat";
 
-    public Game(List<Movie> movies) {
-        this.movies = movies;
+    public Game () {
+        try {
+            this.movies = Movie.loadMoviesFromFile(rutaMovies);
+        } catch (IOException e) {
+            System.err.println("Error al cargar las películas: " + e.getMessage());
+            throw new RuntimeException(e);
+        }
         this.guessedLetters = new HashSet<>();
         this.ranking = loadRankingFromFile();  // Cargar el ranking desde el archivo binario
     }
@@ -232,13 +237,4 @@ public class Game {
         }
     }
 
-    public static void main(String[] args) {
-        try {
-            List<Movie> movies = Movie.loadMoviesFromFile(rutaMovies);
-            Game game = new Game(movies);
-            game.start();
-        } catch (IOException e) {
-            System.err.println("Error al cargar las películas: " + e.getMessage());
-        }
-    }
 }
