@@ -69,10 +69,13 @@ public class Game {
                 default -> System.out.println("Opción no válida. Intenta nuevamente.");
             }
 
-            if (isGameWon()) {
-                System.out.println("¡Felicidades! Has adivinado la película: " + selectedMovie.getTitle());
-                player.addScore(20);
-                break;
+            // Solo se ejecuta si la opción fue 1 o 2
+            if (choice == 1 || choice == 2) {
+                if (isGameWon()) {
+                    System.out.println("¡Felicidades! Has adivinado la película: " + selectedMovie.getTitle());
+                    player.addScore(20);
+                    break;
+                }
             }
         }
 
@@ -83,37 +86,45 @@ public class Game {
         System.out.println("Puntuación final: " + player.getScore());
 
         // Verifica si el jugador entra en el ranking
+        // Verifica si el jugador entra en el ranking
         if (ranking.size() < 5 || player.getScore() > ranking.get(4).getScore()) {
-            boolean nicknameExists = false;
-            while (!nicknameExists) {
-                System.out.print("Introduce tu nickname para el ranking: ");
-                String nicknameInput = new Scanner(System.in).nextLine();
+            String nicknameInput = null;
+            boolean nicknameValid = false;
 
-                // Verificar si el nickname ya existe
-                for (Player p : ranking) {
-                    if (p.getNickname().equalsIgnoreCase(nicknameInput)) {
-                        System.out.println("El nickname ya existe. Intenta con otro.");
-                        break;
+            // Bucle para obtener un nickname válido
+            while (!nicknameValid) {
+                System.out.print("Introduce tu nickname para el ranking: ");
+                nicknameInput = scanner.nextLine().trim();
+
+                // Comprobar si el nickname ya existe en los primeros 4 lugares
+                boolean nicknameExists = false;
+                int limit = Math.min(4, ranking.size());  // Comprobar solo los primeros 4 lugares
+                for (int i = 0; i < limit; i++) {
+                    if (ranking.get(i).getNickname().equalsIgnoreCase(nicknameInput)) {
+                        nicknameExists = true;
+                        break;  // Si encontramos el nickname, ya no necesitamos seguir buscando
                     }
                 }
 
-                if (!nicknameExists) {
-                    nicknameExists = true;
-                    Player newPlayer = new Player();
-                    newPlayer.setNickname(nicknameInput);
-                    newPlayer.addScore(player.getScore());
-                    ranking.add(newPlayer);
-                    Collections.sort(ranking, (p1, p2) -> p2.getScore() - p1.getScore()); // Ordenar el ranking
-
-                    // Mantener solo las 5 mejores puntuaciones
-                    if (ranking.size() > 5) {
-                        ranking.remove(5);
-                    }
-
-                    saveRankingToFile(ranking);  // Guardar el ranking actualizado en el archivo
-                    break;
+                if (nicknameExists) {
+                    System.out.println("El nickname ya existe. Intenta con otro.");
+                } else {
+                    nicknameValid = true;  // Si el nickname es válido, salimos del bucle
                 }
             }
+            Player newPlayer = new Player();
+            newPlayer.setNickname(nicknameInput);
+            newPlayer.addScore(player.getScore());
+            ranking.add(newPlayer);
+            ranking.sort((p1, p2) -> p2.getScore() - p1.getScore()); // Ordenar el ranking
+
+            // Mantener solo las 5 mejores puntuaciones
+            if (ranking.size() > 5) {
+                ranking.remove(5);
+            }
+
+            saveRankingToFile(ranking);  // Guardar el ranking actualizado en el archivo
+
         } else {
             System.out.println("Tu puntuación no entra en el ranking.");
         }
