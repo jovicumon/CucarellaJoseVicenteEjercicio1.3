@@ -99,7 +99,6 @@ public class Game {
         System.out.println("Puntuación final: " + player.getScore());
 
         // Verifica si el jugador entra en el ranking
-        // Verifica si el jugador entra en el ranking
         if (ranking.size() < 5 || player.getScore() > ranking.get(4).getScore()) {
             String nicknameInput = null;
             boolean nicknameValid = false;
