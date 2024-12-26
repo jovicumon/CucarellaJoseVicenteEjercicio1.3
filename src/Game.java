@@ -2,7 +2,7 @@ import java.io.*;
 import java.util.*;
 
 /**
- * Clase principal que gestiona el juego.
+ * Clase principal que gestiona el juego de adivinanza de películas.
  */
 public class Game {
     private List<Movie> movies;
@@ -14,6 +14,11 @@ public class Game {
     static final String rutaMovies = "data/movies.txt";
     static final String rutaRanking = "data/ranking.dat";
 
+
+    /**
+     * Constructor que inicializa el juego cargando la lista de películas
+     * y el ranking desde sus respectivos archivos.
+     */
     public Game () {
         try {
             this.movies = Movie.loadMoviesFromFile(rutaMovies);
@@ -25,6 +30,9 @@ public class Game {
         this.ranking = loadRankingFromFile();  // Cargar el ranking desde el archivo binario
     }
 
+    /**
+     * Método principal para iniciar el juego.
+     */
     public void start() {
         Scanner scanner = new Scanner(System.in);
 
@@ -141,6 +149,10 @@ public class Game {
         }
     }
 
+    /**
+     * Método para manejar la lógica de adivinar una letra.
+     * @param scanner Objeto Scanner para leer la entrada del usuario.
+     */
     private void guessLetter(Scanner scanner) {
         System.out.print("Introduce una letra: ");
         String input = scanner.nextLine().toLowerCase();
@@ -171,6 +183,10 @@ public class Game {
         System.out.println("Título actual: " + getRevealedTitle());
     }
 
+    /**
+     * Método para manejar la lógica de adivinar el título completo de la película.
+     * @param scanner Objeto Scanner para leer la entrada del usuario.
+     */
     private void guessTitle(Scanner scanner) {
         System.out.print("Introduce el título completo: ");
         String guessedTitle = scanner.nextLine().toLowerCase();
@@ -186,6 +202,10 @@ public class Game {
         remainingAttempts = 0; // Terminar el juego
     }
 
+    /**
+     * Genera el título revelado parcialmente, reemplazando letras no adivinadas con '*'.
+     * @return Título revelado parcialmente.
+     */
     private String getRevealedTitle() {
         StringBuilder revealedTitle = new StringBuilder();
         for (char c : selectedMovie.getTitle().toCharArray()) {
@@ -198,6 +218,10 @@ public class Game {
         return revealedTitle.toString();
     }
 
+    /**
+     * Verifica si el jugador ha adivinado completamente la película.
+     * @return true si se ha adivinado, false en caso contrario.
+     */
     private boolean isGameWon() {
         for (char c : selectedMovie.getTitle().toCharArray()) {
             if (Character.isLetter(c) && !guessedLetters.contains(c)) {
@@ -207,6 +231,12 @@ public class Game {
         return true;
     }
 
+    /**
+     * Carga el ranking desde el archivo binario especificado en la constante {@code rutaRanking}.
+     * Si el archivo no existe o está vacío, devuelve una lista vacía.
+     *
+     * @return Una lista de objetos {@code Player} que representan el ranking actual.
+     */
     // Cargar el ranking desde el archivo binario
     public static List<Player> loadRankingFromFile() {
         List<Player> ranking = new ArrayList<>();
@@ -228,6 +258,11 @@ public class Game {
         return ranking;
     }
 
+    /**
+     * Guarda el ranking actualizado en el archivo binario especificado en la constante {@code rutaRanking}.
+     *
+     * @param ranking La lista de objetos {@code Player} que se desea guardar.
+     */
     // Guardar el ranking actualizado en el archivo binario
     public static void saveRankingToFile(List<Player> ranking) {
         try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(rutaRanking))) {
